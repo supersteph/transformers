@@ -335,6 +335,10 @@ def evaluate(args, model, tokenizer, prefix=""):
                         batch[2] if args.model_type in ["bert", "xlnet", "albert"] else None
                     )  # XLM, DistilBERT, RoBERTa, and XLM-RoBERTa don't use segment_ids
                 outputs = model(**inputs)
+                all_hidden_states, all_attentions = outputs[-2:]
+                print("attentions and all_hidden_states")
+                print(all_attentions)
+                print(all_hidden_states)
                 tmp_eval_loss, logits = outputs[:2]
 
                 eval_loss += tmp_eval_loss.mean().item()
