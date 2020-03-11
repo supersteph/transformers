@@ -338,7 +338,7 @@ def evaluate(args, model, tokenizer, prefix=""):
                 all_hidden_states, all_attentions = outputs[-2:]
                 print("attentions?")
                 print(inputs["input_ids"].size())
-                print(outputs[-1])
+                print(outputs)
                 tmp_eval_loss, logits = outputs[:2]
 
                 eval_loss += tmp_eval_loss.mean().item()
