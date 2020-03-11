@@ -336,9 +336,9 @@ def evaluate(args, model, tokenizer, prefix=""):
                     )  # XLM, DistilBERT, RoBERTa, and XLM-RoBERTa don't use segment_ids
                 outputs = model(**inputs)
                 all_hidden_states, all_attentions = outputs[-2:]
-                print("attentions and all_hidden_states")
-                print(all_attentions)
-                print(all_hidden_states)
+                print("attentions?")
+                print(inputs.size())
+                print(outputs[-1])
                 tmp_eval_loss, logits = outputs[:2]
 
                 eval_loss += tmp_eval_loss.mean().item()
