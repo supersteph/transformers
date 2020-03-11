@@ -335,7 +335,6 @@ def evaluate(args, model, tokenizer, prefix=""):
                         batch[2] if args.model_type in ["bert", "xlnet", "albert"] else None
                     )  # XLM, DistilBERT, RoBERTa, and XLM-RoBERTa don't use segment_ids
                 outputs = model(**inputs)
-                all_hidden_states, all_attentions = outputs[-2:]
                 print("attentions?")
                 print(inputs["input_ids"].size())
                 print(outputs)
@@ -624,10 +623,10 @@ def main():
     args.model_type = args.model_type.lower()
     config_class, model_class, tokenizer_class = MODEL_CLASSES[args.model_type]
     config = config_class.from_pretrained(
+        output_attentions = True,
         args.config_name if args.config_name else args.model_name_or_path,
         num_labels=num_labels,
         finetuning_task=args.task_name,
-        output_attentions = True,
         cache_dir=args.cache_dir if args.cache_dir else None,
     )
     tokenizer = tokenizer_class.from_pretrained(
