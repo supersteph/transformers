@@ -56,6 +56,7 @@ class PretrainedConfig(object):
     model_type = ""  # type: str
 
     def __init__(self, **kwargs):
+        print(kwargs)
         # Attributes with defaults
         self.output_attentions = kwargs.pop("output_attentions", False)
         self.output_hidden_states = kwargs.pop("output_hidden_states", False)
