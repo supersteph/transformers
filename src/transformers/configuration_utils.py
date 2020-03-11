@@ -58,6 +58,8 @@ class PretrainedConfig(object):
     def __init__(self, **kwargs):
         # Attributes with defaults
         self.output_attentions = kwargs.pop("output_attentions", False)
+        print("hello")
+        print(output_attentions)
         self.output_hidden_states = kwargs.pop("output_hidden_states", False)
         self.output_past = kwargs.pop("output_past", True)  # Not used by all models
         self.torchscript = kwargs.pop("torchscript", False)  # Only used by PyTorch models
