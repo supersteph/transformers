@@ -57,7 +57,7 @@ class PretrainedConfig(object):
 
     def __init__(self, **kwargs):
         # Attributes with defaults
-        self.output_attentions = kwargs.pop("output_attentions", False)
+        self.output_attentions = kwargs.pop("output_attentions", True)
         self.output_hidden_states = kwargs.pop("output_hidden_states", False)
         self.output_past = kwargs.pop("output_past", True)  # Not used by all models
         self.torchscript = kwargs.pop("torchscript", False)  # Only used by PyTorch models
@@ -211,7 +211,6 @@ class PretrainedConfig(object):
         resume_download = kwargs.pop("resume_download", False)
         proxies = kwargs.pop("proxies", None)
         local_files_only = kwargs.pop("local_files_only", False)
-
         if pretrained_config_archive_map is None:
             pretrained_config_archive_map = cls.pretrained_config_archive_map
 
@@ -266,7 +265,6 @@ class PretrainedConfig(object):
             logger.info("loading configuration file {}".format(config_file))
         else:
             logger.info("loading configuration file {} from cache at {}".format(config_file, resolved_config_file))
-
         return config_dict, kwargs
 
     @classmethod

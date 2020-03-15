@@ -335,6 +335,7 @@ def evaluate(args, model, tokenizer, prefix=""):
                         batch[2] if args.model_type in ["bert", "xlnet", "albert"] else None
                     )  # XLM, DistilBERT, RoBERTa, and XLM-RoBERTa don't use segment_ids
                 outputs = model(**inputs)
+                print(outputs)
                 tmp_eval_loss, logits = outputs[:2]
 
                 eval_loss += tmp_eval_loss.mean().item()
@@ -623,8 +624,7 @@ def main():
         args.config_name if args.config_name else args.model_name_or_path,
         num_labels=num_labels,
         finetuning_task=args.task_name,
-        cache_dir=args.cache_dir if args.cache_dir else None,
-        output_attention = True
+        cache_dir=args.cache_dir if args.cache_dir else None
     )
     tokenizer = tokenizer_class.from_pretrained(
         args.tokenizer_name if args.tokenizer_name else args.model_name_or_path,
