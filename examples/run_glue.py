@@ -100,6 +100,30 @@ MODEL_CLASSES = {
     "flaubert": (FlaubertConfig, FlaubertForSequenceClassification, FlaubertTokenizer),
 }
 
+def analyze_tensor(curtens):
+    a = []
+    for i in curtens:
+        curdict = {ind:val for ind,val in enumerate(i)}
+        curlist = set()
+        pct = 0.0
+        for key,value in sorted(curdict.items()):
+            if pct >0.8:
+                continue
+            pct += value.double()
+            curlist.add(key)
+        a.append(curlist)
+    return len(set.intersection(*a))
+def analyze_list(layer_comp):
+    allval = []
+    for i,layer in enumerate(layer_comp):
+        curval = 0.0
+        for batch in range(8):
+            for head in range(12):
+                curval+=analyze_tensor(layer[batch][head])
+        curval /= 8*12
+        allval.append(curval)
+    return allval
+
 
 def set_seed(args):
     random.seed(args.seed)
@@ -335,7 +359,9 @@ def evaluate(args, model, tokenizer, prefix=""):
                         batch[2] if args.model_type in ["bert", "xlnet", "albert"] else None
                     )  # XLM, DistilBERT, RoBERTa, and XLM-RoBERTa don't use segment_ids
                 outputs = model(**inputs)
-                print(outputs)
+                attentions = outputs[-1]
+                print(analyze_list(attentions)) 
+                #print(outputs[-1])
                 tmp_eval_loss, logits = outputs[:2]
 
                 eval_loss += tmp_eval_loss.mean().item()
