@@ -99,31 +99,41 @@ MODEL_CLASSES = {
     "xlmroberta": (XLMRobertaConfig, XLMRobertaForSequenceClassification, XLMRobertaTokenizer),
     "flaubert": (FlaubertConfig, FlaubertForSequenceClassification, FlaubertTokenizer),
 }
-
-def analyze_tensor(curtens):
+def get_first(tens):
+    for ind, iid in enumerate(tens):
+        if iid == 0:
+            return ind
+    return len(tens)
+def analyze_tensor(curtens, input):
     a = []
-    for i in curtens:
-        curdict = {ind:val for ind,val in enumerate(i)}
+    pad = get_first(input)
+    man = curtens[0:pad,0:pad]
+
+    for i in man:
+        curdict = {val:ind for ind,val in enumerate(i)}
         curlist = set()
         pct = 0.0
-        for key,value in sorted(curdict.items()):
-            if pct >0.8:
-                continue
-            pct += value.double()
-            curlist.add(key)
+        for key,value in sorted(curdict.items(), reverse=True)[0:5]:
+            pct += key.double()
+            curlist.add(value)
         a.append(curlist)
     return len(set.intersection(*a))
-def analyze_list(layer_comp):
+def analyze_list(layer_comp, inputs):
     allval = []
     for i,layer in enumerate(layer_comp):
         curval = 0.0
         for batch in range(8):
             for head in range(12):
-                curval+=analyze_tensor(layer[batch][head])
+                curval+=analyze_tensor(layer[batch][head], inputs[batch])
         curval /= 8*12
         allval.append(curval)
     return allval
 
+def compile_list(base, other, count):
+    val = []
+    for a,b in zip(base,other):
+        val.append((a*count+b)/(count+1))
+    return val
 
 def set_seed(args):
     random.seed(args.seed)
@@ -325,6 +335,8 @@ def evaluate(args, model, tokenizer, prefix=""):
     eval_outputs_dirs = (args.output_dir, args.output_dir + "-MM") if args.task_name == "mnli" else (args.output_dir,)
 
     results = {}
+    cur = []
+    i =0
     for eval_task, eval_output_dir in zip(eval_task_names, eval_outputs_dirs):
         eval_dataset = load_and_cache_examples(args, eval_task, tokenizer, evaluate=True)
 
@@ -360,7 +372,11 @@ def evaluate(args, model, tokenizer, prefix=""):
                     )  # XLM, DistilBERT, RoBERTa, and XLM-RoBERTa don't use segment_ids
                 outputs = model(**inputs)
                 attentions = outputs[-1]
-                print(analyze_list(attentions)) 
+                if cur == []:
+                    cur = analyze_list(attentions, inputs["input_ids"])
+                else:
+                    cur = compile_list(cur, analyze_list(attentions, inputs["input_ids"]), i)
+                i+=1
                 #print(outputs[-1])
                 tmp_eval_loss, logits = outputs[:2]
 
@@ -387,7 +403,7 @@ def evaluate(args, model, tokenizer, prefix=""):
             for key in sorted(result.keys()):
                 logger.info("  %s = %s", key, str(result[key]))
                 writer.write("%s = %s\n" % (key, str(result[key])))
-
+    print(cur)
     return results
 
 
