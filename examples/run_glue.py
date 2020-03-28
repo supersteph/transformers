@@ -113,7 +113,9 @@ def analyze_tensor(curtens, input):
         curdict = {val:ind for ind,val in enumerate(i)}
         curlist = set()
         pct = 0.0
-        for key,value in sorted(curdict.items(), reverse=True)[0:5]:
+        for key,value in sorted(curdict.items(), reverse=True):
+            if pct>0.8:
+                break
             pct += key.double()
             curlist.add(value)
         a.append(curlist)
