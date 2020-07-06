@@ -55,6 +55,10 @@ class PretrainedConfig(object):
 
     def __init__(self, **kwargs):
         # Attributes with defaults
+<<<<<<< HEAD
+=======
+        self.output_attentions = kwargs.pop("output_attentions", True)
+>>>>>>> 78bf8ef4c8a7eefab2fba4c15f48e702d443c2b5
         self.output_hidden_states = kwargs.pop("output_hidden_states", False)
         self.output_attentions = kwargs.pop("output_attentions", False)
         self.use_cache = kwargs.pop("use_cache", True)  # Not used by all models
@@ -220,8 +224,17 @@ class PretrainedConfig(object):
         resume_download = kwargs.pop("resume_download", False)
         proxies = kwargs.pop("proxies", None)
         local_files_only = kwargs.pop("local_files_only", False)
+<<<<<<< HEAD
 
         if os.path.isdir(pretrained_model_name_or_path):
+=======
+        if pretrained_config_archive_map is None:
+            pretrained_config_archive_map = cls.pretrained_config_archive_map
+
+        if pretrained_model_name_or_path in pretrained_config_archive_map:
+            config_file = pretrained_config_archive_map[pretrained_model_name_or_path]
+        elif os.path.isdir(pretrained_model_name_or_path):
+>>>>>>> 78bf8ef4c8a7eefab2fba4c15f48e702d443c2b5
             config_file = os.path.join(pretrained_model_name_or_path, CONFIG_NAME)
         elif os.path.isfile(pretrained_model_name_or_path) or is_remote_url(pretrained_model_name_or_path):
             config_file = pretrained_model_name_or_path
@@ -263,7 +276,6 @@ class PretrainedConfig(object):
             logger.info("loading configuration file {}".format(config_file))
         else:
             logger.info("loading configuration file {} from cache at {}".format(config_file, resolved_config_file))
-
         return config_dict, kwargs
 
     @classmethod

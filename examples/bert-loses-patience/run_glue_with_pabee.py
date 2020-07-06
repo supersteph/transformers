@@ -58,7 +58,43 @@ MODEL_CLASSES = {
     "bert": (BertConfig, BertForSequenceClassificationWithPabee, BertTokenizer),
     "albert": (AlbertConfig, AlbertForSequenceClassificationWithPabee, AlbertTokenizer),
 }
+def get_first(tens):
+    for ind, iid in enumerate(tens):
+        if iid == 0:
+            return ind
+    return len(tens)
+def analyze_tensor(curtens, input):
+    a = []
+    pad = get_first(input)
+    man = curtens[0:pad,0:pad]
 
+    for i in man:
+        curdict = {val:ind for ind,val in enumerate(i)}
+        curlist = set()
+        pct = 0.0
+        for key,value in sorted(curdict.items(), reverse=True):
+            if pct>0.5:
+                break
+            pct += key.double()
+            curlist.add(value)
+        a.append(curlist)
+    return len(set.intersection(*a))
+def analyze_list(layer_comp, inputs):
+    allval = []
+    for i,layer in enumerate(layer_comp):
+        curval = 0.0
+        for batch in range(8):
+            for head in range(12):
+                curval+=analyze_tensor(layer[batch][head], inputs[batch])
+        curval /= 8*12
+        allval.append(curval)
+    return allval
+
+def compile_list(base, other, count):
+    val = []
+    for a,b in zip(base,other):
+        val.append((a*count+b)/(count+1))
+    return val
 
 def set_seed(args):
     random.seed(args.seed)
@@ -272,6 +308,8 @@ def evaluate(args, model, tokenizer, prefix="", patience=0):
     eval_outputs_dirs = (args.output_dir, args.output_dir + "-MM") if args.task_name == "mnli" else (args.output_dir,)
 
     results = {}
+    cur = []
+    i =0
     for eval_task, eval_output_dir in zip(eval_task_names, eval_outputs_dirs):
         eval_dataset = load_and_cache_examples(args, eval_task, tokenizer, evaluate=True)
 
@@ -307,6 +345,13 @@ def evaluate(args, model, tokenizer, prefix="", patience=0):
                 }
                 inputs["token_type_ids"] = batch[2]
                 outputs = model(**inputs)
+                attentions = outputs[-1]
+                if cur == []:
+                    cur = analyze_list(attentions, inputs["input_ids"])
+                else:
+                    cur = compile_list(cur, analyze_list(attentions, inputs["input_ids"]), i)
+                i+=1
+                #print(outputs[-1])
                 tmp_eval_loss, logits = outputs[:2]
 
                 eval_loss += tmp_eval_loss.mean().item()
@@ -333,6 +378,7 @@ def evaluate(args, model, tokenizer, prefix="", patience=0):
                 logger.info("  %s = %s", key, str(result[key]))
                 print("  %s = %s" % (key, str(result[key])))
                 writer.write("%s = %s\n" % (key, str(result[key])))
+<<<<<<< HEAD:examples/bert-loses-patience/run_glue_with_pabee.py
 
     if args.eval_all_checkpoints and patience != 0:
         if args.model_type == "albert":
@@ -342,6 +388,9 @@ def evaluate(args, model, tokenizer, prefix="", patience=0):
         else:
             raise NotImplementedError()
 
+=======
+    print(cur)
+>>>>>>> 78bf8ef4c8a7eefab2fba4c15f48e702d443c2b5:examples/run_glue.py
     return results
 
 
@@ -612,7 +661,7 @@ def main():
         args.config_name if args.config_name else args.model_name_or_path,
         num_labels=num_labels,
         finetuning_task=args.task_name,
-        cache_dir=args.cache_dir if args.cache_dir else None,
+        cache_dir=args.cache_dir if args.cache_dir else None
     )
     tokenizer = tokenizer_class.from_pretrained(
         args.tokenizer_name if args.tokenizer_name else args.model_name_or_path,
