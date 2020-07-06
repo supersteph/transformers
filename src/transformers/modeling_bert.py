@@ -395,6 +395,7 @@ class BertEncoder(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.config = config
+        self.pool = nn.AvgPool1d(2)
         self.layer = nn.ModuleList([BertLayer(config) for _ in range(config.num_hidden_layers)])
 
     def forward(
@@ -407,11 +408,12 @@ class BertEncoder(nn.Module):
         output_attentions=False,
         output_hidden_states=False,
     ):
+        print(output_attentions)
         all_hidden_states = ()
         all_attentions = ()
         for i, layer_module in enumerate(self.layer):
-            if output_hidden_states:
-                all_hidden_states = all_hidden_states + (hidden_states,)
+            
+            all_hidden_states = all_hidden_states + (hidden_states,)
 
             if getattr(self.config, "gradient_checkpointing", False):
 
@@ -430,16 +432,30 @@ class BertEncoder(nn.Module):
                     encoder_attention_mask,
                 )
             else:
-                layer_outputs = layer_module(
-                    hidden_states,
-                    attention_mask,
-                    head_mask[i],
-                    encoder_hidden_states,
-                    encoder_attention_mask,
-                    output_attentions,
-                )
-            hidden_states = layer_outputs[0]
+                if i != 7:
 
+                    layer_outputs = layer_module(
+                        hidden_states,
+                        attention_mask,
+                        head_mask[i],
+                        encoder_hidden_states,
+                        encoder_attention_mask,
+                        output_attentions,
+                    )
+                else:
+                    layer_outputs = layer_module(
+                        torch.cat(all_hidden_states,1),
+                        attention_mask,
+                        head_mask[i],
+                        encoder_hidden_states,
+                        encoder_attention_mask,
+                        output_attentions,
+                    )
+                    hidden_states = layer_outputs[0];
+                    break;
+
+            hidden_states = self.pool(layer_outputs[0].permute(0,2,1)).permute(0,2,1)
+            attention_mask = torch.unsqueeze(self.pool(torch.squeeze(attention_mask,dim=1)),dim=1)
             if output_attentions:
                 all_attentions = all_attentions + (layer_outputs[1],)
 
@@ -448,6 +464,7 @@ class BertEncoder(nn.Module):
             all_hidden_states = all_hidden_states + (hidden_states,)
 
         outputs = (hidden_states,)
+        print(hidden_states.size())
         if output_hidden_states:
             outputs = outputs + (all_hidden_states,)
         if output_attentions:
