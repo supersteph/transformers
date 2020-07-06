@@ -408,7 +408,6 @@ class BertEncoder(nn.Module):
         output_attentions=False,
         output_hidden_states=False,
     ):
-        print(output_attentions)
         all_hidden_states = ()
         all_attentions = ()
         for i, layer_module in enumerate(self.layer):
@@ -464,7 +463,7 @@ class BertEncoder(nn.Module):
             all_hidden_states = all_hidden_states + (hidden_states,)
 
         outputs = (hidden_states,)
-        print(hidden_states.size())
+
         if output_hidden_states:
             outputs = outputs + (all_hidden_states,)
         if output_attentions:
