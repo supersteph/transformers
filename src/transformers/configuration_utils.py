@@ -55,10 +55,6 @@ class PretrainedConfig(object):
 
     def __init__(self, **kwargs):
         # Attributes with defaults
-<<<<<<< HEAD
-=======
-        self.output_attentions = kwargs.pop("output_attentions", True)
->>>>>>> 78bf8ef4c8a7eefab2fba4c15f48e702d443c2b5
         self.output_hidden_states = kwargs.pop("output_hidden_states", False)
         self.output_attentions = kwargs.pop("output_attentions", False)
         self.use_cache = kwargs.pop("use_cache", True)  # Not used by all models
